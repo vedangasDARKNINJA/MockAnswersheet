@@ -123,7 +123,7 @@ $(function() {
 			console.log({id:elem,sr:sr,ans:ans});
 			if(ans!="")
 			{
-				$("#sel_"+sr).empty().append();
+				$("#sel_"+sr).empty().append(ans);
 			}
 			else
 			{
