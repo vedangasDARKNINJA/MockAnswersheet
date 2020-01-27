@@ -1,14 +1,15 @@
 function generateAnswer(sr)
 {
 	const msg = '<tr id="'+sr+'">\
+	<td><button class="unmarked" id="AC_'+sr+'"></button> <button class="unmarked" id="R_'+sr+'"></button></td>\
 	<td id="sr_'+sr+'" class="sr">'+sr+'.</td>\
 	<td>\
 	  <select name="qtype" id="qtype_'+sr+'">\
-		<option value="0">Single option Correct</option>\
-		<option value="1">Multiple option Correct</option>\
-		<option value="2">Quant Comparison</option>\
-		<option value="3">Numeric Entry Single</option>\
-		<option value="4">Numeric Entry Fraction</option>\
+		<option value="0">SC</option>\
+		<option value="1">MC</option>\
+		<option value="2">QC</option>\
+		<option value="3">NES</option>\
+		<option value="4">NEF</option>\
 	  </select>\
 	</td>\
 	<td>\
@@ -70,9 +71,7 @@ function changeOptionType(sr,type)
 	$("#options_"+sr).append(msg);
 }
 
-
-
-
+var save="";
 
 $(function() {
 	$("#gen").on('click', function () {
@@ -110,7 +109,14 @@ $(function() {
 		$.each($("input[name='Answer"+sr+"']:checked"),function(){
 			selected.push($(this).val());
 		});
-		$("#sel_"+sr).empty().append(selected.join(","));
+		if(selected.length>0)
+		{
+			$("#sel_"+sr).empty().append(selected.join(","));
+		}
+		else
+		{
+			$("#sel_"+sr).empty().append("-");
+		}
 	});
 
 	$(document).on('change','input[type="number"]',function(e)
@@ -120,7 +126,7 @@ $(function() {
 		{
 			let sr = elem.substring(2);
 			const ans = $("#"+elem).val();
-			console.log({id:elem,sr:sr,ans:ans});
+			//console.log({id:elem,sr:sr,ans:ans});
 			if(ans!="")
 			{
 				$("#sel_"+sr).empty().append(ans);
@@ -150,6 +156,112 @@ $(function() {
 		}
 	});
 
+	$(document).on('click','button',(e)=>{
+		const elem = e.target.id;
+		//console.log(elem);
+		if(elem != "save" || elem != "load")
+		{
+			if(elem.indexOf("R")!=-1)
+			{
+				$("#"+elem).toggleClass("unmarked review");
+			}
+			else if(elem.indexOf("AC")!=-1)
+			{
+				const c = $("#"+elem).attr('class');
+				if(c == "unmarked")
+				{
+					$("#"+elem).toggleClass("unmarked correct");
+				}
+				else if(c == "correct")
+				{
+					$("#"+elem).toggleClass("correct incorrect");
+				}
+				else if(c == "incorrect")
+				{
+					$("#"+elem).toggleClass("incorrect unmarked");
+				}
+			}
+		}
+	});
 
 
-})
+	$("#save").on('click',function(){
+		const num = parseInt($("tr:last-child").attr('id'));
+		var sheet = [];
+		for(var i =1;i<=num;i++)
+		{
+			let ac_class = $("#AC_"+i).attr('class');
+			let r_class = $("#R_"+i).attr('class');
+			let qtype = $("#qtype_"+i+" option:selected").val();
+			let answer = [];
+			if(qtype==1)
+			{
+				$.each($("input[name='Answer"+i+"']:checked"),function(){
+					answer.push($(this).val());
+				});
+				if(answer.length==0)
+				{
+					answer.push("-");
+				}
+			}
+			else
+			{
+				if(qtype==3 || qtype == 4)
+				{
+					answer.push($("#sel_"+i).text());
+				}
+				else
+				{
+					answer.push($("#o_"+i+":checked").val());
+				}
+			}
+
+			switch(ac_class)
+			{
+				case 'unmarked':
+					ac_class = 0;	
+					break;
+				case 'correct':
+					ac_class = 1;
+					break;
+				case 'incorrect':
+					ac_class = 2;
+					break;
+				
+			}
+
+			switch(r_class)
+			{
+				case 'unmarked':
+					r_class = 0;	
+					break;
+				case 'review':
+					r_class = 1;
+					break;
+			}
+
+			const obj = {
+				AC: ac_class,
+				R: r_class,
+				Qtype:qtype,
+				Ans:answer
+			};
+			console.log(obj);
+			sheet.push(obj);
+		}
+		var today = new Date();
+		var date = today.getDate() + "_" + (today.getMonth()+1) + "_" + today.getFullYear();
+		console.log(date);
+		if(sheet.length>0)
+		{
+			var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(sheet));
+			var downloadAnchorNode = document.createElement('a');
+			downloadAnchorNode.setAttribute("href",     dataStr);
+			downloadAnchorNode.setAttribute("download", "sheet_"+date+ ".json");
+			document.body.appendChild(downloadAnchorNode); // required for firefox
+			downloadAnchorNode.click();
+			downloadAnchorNode.remove();
+		}
+	});
+
+});

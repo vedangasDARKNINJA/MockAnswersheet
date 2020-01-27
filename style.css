@@ -1,3 +1,46 @@
+body
+{
+    background-color: #232323;
+    color:white;
+}
+
+button
+{
+    outline:none;
+    border:none;
+    background-color: cornflowerblue;
+    padding: 10px;
+    border-radius: 50px;
+    color:white;
+    transition: all 0.2s;
+}
+
+
+input
+{
+    outline:none;
+    border:none;
+    background-color: transparent;
+    border:1px solid white;
+    color:white;
+}
+
+select
+{
+    outline:none;
+    border:none;
+    border-radius: 10px;
+    background-color: cornflowerblue;
+    color:white;
+}
+
+option
+{
+    background-color: white;
+    color:black;
+    border:none;
+}
+
 body,div,label
 {
     -webkit-user-select: none; /* Safari 3.1+ */
@@ -14,7 +57,7 @@ table
   
 table, th, td 
 {
-    border: 1px solid black;
+    border: 1px solid white;
 }
 
 th,td
@@ -33,6 +76,12 @@ input[type="number"]
     width:100px;
 }
 
+
+#MarkOptions
+{
+    width:100px;
+}
+
 #srno
 {
     width:50px;
@@ -41,7 +90,7 @@ input[type="number"]
 
 #qtype
 {
-    width: 200px;
+    width: 100px;
 }
 #selAns
 {
@@ -61,4 +110,37 @@ input[type="number"]
 .options>span
 {
     padding: 0px 5px;
+}
+
+
+.unmarked
+{
+    width:10px;
+    height:10px;
+    margin: 2px 5px;
+    background-color: white;
+}
+
+.correct
+{
+    width:10px;
+    height:10px;
+    margin: 2px 5px;
+    background-color: #30d158;
+}
+
+.incorrect
+{
+    width:10px;
+    height:10px;
+    margin: 2px 5px;
+    background-color: #ff453a;
+}
+
+.review
+{
+    width:10px;
+    height:10px;
+    margin: 2px 5px;
+    background-color: #ff9f0a;
 }
