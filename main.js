@@ -2,7 +2,7 @@ function generateAnswer(sr)
 {
 	const msg = '<tr id="'+sr+'">\
 	<td><button class="unmarked" id="AC_'+sr+'"></button> <button class="unmarked" id="R_'+sr+'"></button></td>\
-	<td id="sr_'+sr+'" class="sr">'+sr+'.</td>\
+	<td id="sr_'+sr+'" class="sr">'+(sr+1)+'.</td>\
 	<td>\
 	  <select name="qtype" id="qtype_'+sr+'">\
 		<option value="0">SC</option>\
@@ -80,7 +80,7 @@ $(function() {
 			$("tbody").children().not(':first').remove();
 			for(var i=0;i<parseInt($("#numQ").val());i++)
 			{
-				$("tbody").append(generateAnswer(i+1));
+				$("tbody").append(generateAnswer(i));
 			}
 		}
 	});
@@ -261,6 +261,75 @@ $(function() {
 			document.body.appendChild(downloadAnchorNode); // required for firefox
 			downloadAnchorNode.click();
 			downloadAnchorNode.remove();
+		}
+	});
+
+	$("#Load").on('click',function(){
+		$("#file-input").focus().trigger('click');
+	});
+
+
+	let fileUploaded = new FileReader();
+	$("#file-input").on('change',function(e)
+	{
+		fileUploaded.readAsText(e.target.files[0]);
+	});
+
+	fileUploaded.addEventListener("load",(e)=>{
+		const msg = JSON.parse(e.target.result);
+		console.log(msg);
+		$("tbody").children().not(':first').remove();
+		for(var i=0;i<msg.length;i++)
+		{
+			console.log(msg[i]);
+			$("tbody").append(generateAnswer(i));
+			if(msg[i].AC>0)
+			{
+				for(var x=0;x<msg[i].AC;x++)
+					$("#AC_"+i).trigger('click');
+			}
+			if(msg[i].R>0)
+			{
+				$("#R_"+i).trigger('click');
+			}
+			changeOptionType(i,msg[i].Qtype);
+			$("#qtype_"+i).val(msg[i].Qtype);
+			if(msg[i].Qtype == 0 || msg[i].Qtype == 2)
+			{
+				$("input[name='Answer"+i+"'][value='"+msg[i].Ans[0]+"']").trigger('click').attr('checked',true);
+			}
+			else
+			{
+				if(msg[i].Qtype == 1)
+				{
+					//Multiple correct
+					for(const obj in msg[i].Ans)
+					{
+						const sel = "input[name='Answer"+i+"'][value='"+msg[i].Ans[obj]+"']";
+						$(sel).trigger('click').attr('checked',true);
+					}
+				}
+				else
+				{
+					if(msg[i].Qtype == 3)
+					{
+						//Numeric single
+						$("#o_"+i).val(parseInt(msg[i].Ans[0],10));
+						$("#sel_"+i).empty().append(msg[i].Ans[0]);
+					}
+					else
+					{
+						//Fraction
+						if(msg[i].Ans[0].indexOf("/")!=-1)
+						{
+							const nums = msg[i].Ans[0].split("/");
+							$("#sel_"+i).empty().append(msg[i].Ans[0]);
+							$("#o_"+i+"_N").val(parseInt(nums[0],10));
+							$("#o_"+i+"_D").val(parseInt(nums[1],10));
+						}
+					}
+				}
+			}
 		}
 	});
 
