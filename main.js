@@ -26,6 +26,16 @@ function generateAnswer(sr)
 	return msg;
 }
 
+function ReturnRadio(sr,val)
+{
+	const msg = '<label class="container">\
+					<input type="radio" name="Answer'+sr+'" id="o_'+sr+'" value="'+val+'">'+val+'\
+					<span class="checkmark"></span>\
+				</label>'
+
+	return msg;
+}
+
 function changeOptionType(sr,type)
 {
 	$("#options_"+sr).empty();
@@ -34,6 +44,8 @@ function changeOptionType(sr,type)
 	switch(type)
 	{
 		case "0":
+			//msg = ReturnRadio(sr,"A")+ReturnRadio(sr,"B")+ReturnRadio(sr,"C")+ReturnRadio(sr,"D")+ReturnRadio(sr,"E");
+			
 			msg = '<label><input type="radio" name="Answer'+sr+'" id="o_'+sr+'" value="A">A</label>\
 			<label><input type="radio" name="Answer'+sr+'" id="o_'+sr+'" value="B">B</label>\
 			<label><input type="radio" name="Answer'+sr+'" id="o_'+sr+'" value="C">C</label>\
@@ -188,7 +200,7 @@ $(function() {
 	$("#save").on('click',function(){
 		const num = parseInt($("tr:last-child").attr('id'));
 		var sheet = [];
-		for(var i =1;i<=num;i++)
+		for(var i =0;i<num;i++)
 		{
 			let ac_class = $("#AC_"+i).attr('class');
 			let r_class = $("#R_"+i).attr('class');
