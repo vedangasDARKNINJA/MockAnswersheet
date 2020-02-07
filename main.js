@@ -26,16 +26,6 @@ function generateAnswer(sr)
 	return msg;
 }
 
-function ReturnRadio(sr,val)
-{
-	const msg = '<label class="container">\
-					<input type="radio" name="Answer'+sr+'" id="o_'+sr+'" value="'+val+'">'+val+'\
-					<span class="checkmark"></span>\
-				</label>'
-
-	return msg;
-}
-
 function changeOptionType(sr,type)
 {
 	$("#options_"+sr).empty();
@@ -44,8 +34,6 @@ function changeOptionType(sr,type)
 	switch(type)
 	{
 		case "0":
-			//msg = ReturnRadio(sr,"A")+ReturnRadio(sr,"B")+ReturnRadio(sr,"C")+ReturnRadio(sr,"D")+ReturnRadio(sr,"E");
-			
 			msg = '<label><input type="radio" name="Answer'+sr+'" id="o_'+sr+'" value="A">A</label>\
 			<label><input type="radio" name="Answer'+sr+'" id="o_'+sr+'" value="B">B</label>\
 			<label><input type="radio" name="Answer'+sr+'" id="o_'+sr+'" value="C">C</label>\
@@ -83,25 +71,40 @@ function changeOptionType(sr,type)
 	$("#options_"+sr).append(msg);
 }
 
-var save="";
+var Qtried=-1;
+var prevLastQ=-1;
+	
+function checkQChange()
+{
+	console.log("Qcheck called");
+	if(prevLastQ != -1)
+	{
+		if(Qtried != prevLastQ)
+		{
+			console.log({Q: Qtried,L: prevLastQ});
+			$("tr:eq("+(parseInt(Qtried)+1)+")").toggleClass('highlighted_row');
+			$("tr:eq("+(parseInt(prevLastQ)+1)+")").toggleClass('highlighted_row');
+		}
+	}
+	else
+	{
+		console.log({Q: Qtried,L: prevLastQ});
+		$("tr:eq("+(parseInt(Qtried)+1)+")").toggleClass('highlighted_row');
+	}
+	prevLastQ = Qtried;
+}
 
 $(function() {
-	$("#gen").on('click', function () {
-		if(parseInt($("#numQ").val())>0)
-		{
-			$("tbody").children().not(':first').remove();
-			for(var i=0;i<parseInt($("#numQ").val());i++)
-			{
-				$("tbody").append(generateAnswer(i));
-			}
-		}
-	});
+	
 
 	$(document).on('change','select',function(e)
 	{
 		const elem = e.target.id;
 		const newType = $("#" + elem +" option:selected").val();
 		const sr = elem.substring(6);
+		Qtried = sr;
+		console.log(Qtried);
+		checkQChange();
 		changeOptionType(sr,newType);
 	});
 
@@ -110,6 +113,8 @@ $(function() {
 		const elem = e.target.id;
 		const markedOption = $("#" + elem+":checked").val();
 		const sr = elem.substring(2);
+		Qtried = sr;
+		checkQChange();
 		$("#sel_"+sr).empty().append(markedOption);
 	});
 
@@ -117,6 +122,8 @@ $(function() {
 	{
 		const elem = e.target.id;
 		const sr = elem.substring(2);
+		Qtried = sr;
+		checkQChange();
 		var selected = [];
 		$.each($("input[name='Answer"+sr+"']:checked"),function(){
 			selected.push($(this).val());
@@ -134,9 +141,12 @@ $(function() {
 	$(document).on('change','input[type="number"]',function(e)
 	{
 		const elem = e.target.id;
-		if(elem.indexOf('N')==-1 && elem.indexOf('D')==-1)
+		if(elem.indexOf('N')==-1 && elem.indexOf('D')==-1 && elem != "numQ")
 		{
 			let sr = elem.substring(2);
+			Qtried = sr;
+			console.log("Qtried: " + Qtried);
+			checkQChange();
 			const ans = $("#"+elem).val();
 			//console.log({id:elem,sr:sr,ans:ans});
 			if(ans!="")
@@ -153,14 +163,17 @@ $(function() {
 			let sr = elem.substring(2);
 			const ind = sr.indexOf('_');
 			sr = sr.substring(0,ind);
-			console.log(sr);
 			if(elem.indexOf("N")!= -1 && $("#o_"+sr+"_D").val() =="")
 			{
+				Qtried = sr;
+				checkQChange();
 				$("#o_"+sr+"_D").val("1");
 			}
 
 			if(elem.indexOf("D")!= -1 && $("#o_"+sr+"_N").val() =="")
 			{
+				Qtried = sr;
+				checkQChange();
 				$("#o_"+sr+"_N").val("1");
 			}
 
@@ -170,8 +183,26 @@ $(function() {
 
 	$(document).on('click','button',(e)=>{
 		const elem = e.target.id;
-		//console.log(elem);
-		if(elem != "save" || elem != "load")
+		console.log(elem);
+		if(elem == "gen")
+		{
+			if(parseInt($("#numQ").val())>0)
+			{
+				$("tbody").children().not(':first').remove();
+				for(var i=0;i<parseInt($("#numQ").val());i++)
+				{
+					$("tbody").append(generateAnswer(i));
+				}
+			}
+		}
+		if (elem =="add_q")
+		{
+			const val = parseInt($("#numQ").val());
+			$("tbody").append(generateAnswer(val));
+			$("#numQ").val(val+1);
+
+		}
+		else if(elem != "save" || elem != "load")
 		{
 			if(elem.indexOf("R")!=-1)
 			{
@@ -200,7 +231,7 @@ $(function() {
 	$("#save").on('click',function(){
 		const num = parseInt($("tr:last-child").attr('id'));
 		var sheet = [];
-		for(var i =0;i<num;i++)
+		for(var i =0;i<num+1;i++)
 		{
 			let ac_class = $("#AC_"+i).attr('class');
 			let r_class = $("#R_"+i).attr('class');
@@ -289,8 +320,8 @@ $(function() {
 
 	fileUploaded.addEventListener("load",(e)=>{
 		const msg = JSON.parse(e.target.result);
-		console.log(msg);
 		$("tbody").children().not(':first').remove();
+		$("#numQ").val(msg.length);
 		for(var i=0;i<msg.length;i++)
 		{
 			console.log(msg[i]);
